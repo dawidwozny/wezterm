@@ -124,6 +124,13 @@ config.key_tables = {
   },
 }
 
+-- ─── Handle Neovim edge navigation via escape sequences ─────────────────────
+wezterm.on('user-var-changed', function(window, pane, name, value)
+  if name == 'WEZTERM_NAVIGATE' then
+    window:perform_action(wezterm.action.ActivatePaneDirection(value), pane)
+  end
+end)
+
 -- ─── Shell & appearance ──────────────────────────────────────────────────────
 config.default_prog = { 'C:/Program Files/PowerShell/7/pwsh.exe', '-NoLogo' }
 config.color_scheme = 'Solarized Dark (Gogh)'
