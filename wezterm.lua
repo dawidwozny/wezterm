@@ -1,10 +1,10 @@
-local wezterm = require 'wezterm'
+local wezterm = require("wezterm")
 local config = wezterm.config_builder()
 
 -- ─── Smart navigation (Neovim ↔ WezTerm panes) ─────────────────────────────
 -- Uses IS_NVIM user var set by smart-splits.nvim (do NOT use get_foreground_process_name, it causes lag)
 local function is_vim(pane)
-  return pane:get_user_vars().IS_NVIM == 'true'
+	return pane:get_user_vars().IS_NVIM == "true"
 end
 
 local direction_keys = {
@@ -91,10 +91,12 @@ config.keys = {
   -- ── Copy mode ──────────────────────────────────────────────────────────────
   { key = '[', mods = 'LEADER', action = wezterm.action.ActivateCopyMode },
 
-  -- ── Session / misc ─────────────────────────────────────────────────────────
-  { key = ':', mods = 'LEADER', action = wezterm.action.ActivateCommandPalette },
-  { key = '?', mods = 'LEADER', action = wezterm.action.ShowDebugOverlay },
-  { key = 'r', mods = 'LEADER', action = wezterm.action.ReloadConfiguration },
+	-- ── Session / misc ─────────────────────────────────────────────────────────
+	{ key = ":", mods = "LEADER", action = wezterm.action.ActivateCommandPalette },
+	{ key = "?", mods = "LEADER", action = wezterm.action.ShowDebugOverlay },
+	{ key = "r", mods = "LEADER", action = wezterm.action.ReloadConfiguration },
+	{ key = "h", mods = "ALT|SHIFT", action = wezterm.action.ActivateTabRelative(-1) },
+	{ key = "l", mods = "ALT|SHIFT", action = wezterm.action.ActivateTabRelative(1) },
 }
 
 -- ─── Copy mode vim keys ───────────────────────────────────────────────────────
@@ -132,7 +134,24 @@ wezterm.on('user-var-changed', function(window, pane, name, value)
 end)
 
 -- ─── Shell & appearance ──────────────────────────────────────────────────────
-config.default_prog = { 'C:/Program Files/PowerShell/7/pwsh.exe', '-NoLogo' }
-config.color_scheme = 'Solarized Dark (Gogh)'
+config.default_prog = { "pwsh.exe", "-NoLogo" }
+config.color_scheme = "rose-pine-moon"
+-- config.color_scheme = "Apprentice (base16)"
+local local_config_path = wezterm.config_dir .. "\\wezterm.local.lua"
+local ok, local_config = pcall(dofile, local_config_path)
+
+if ok then
+	if type(local_config) == "function" then
+		local_config(wezterm, config)
+	elseif type(local_config) == "table" then
+		for key, value in pairs(local_config) do
+			config[key] = value
+		end
+	end
+elseif not string.find(local_config, "cannot open", 1, true) then
+	wezterm.log_error("Failed to load wezterm.local.lua: " .. local_config)
+end
+
+config.window_close_confirmation = "NeverPrompt"
 
 return config
